@@ -1,1 +1,1160 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport"
+        content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#14251f">
+  <meta name="apple-mobile-web-app-capable" content="yes">
 
+  <title>Pulse — Chats, snaps & calls</title>
+
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" href="./icon.svg" type="image/svg+xml">
+
+  <style>
+    :root {
+      font-family: system-ui, sans-serif;
+      color: #18332a;
+      background: #f2f5ee;
+      --green: #d6f78b;
+      --dark: #14251f;
+    }
+
+    * { box-sizing: border-box; }
+    body { margin: 0; }
+    [hidden] { display: none !important; }
+    button, input { font: inherit; }
+    button { cursor: pointer; }
+    button:disabled { opacity: .45; cursor: not-allowed; }
+
+    button, input {
+      border: 1px solid #d5ded2;
+      border-radius: 12px;
+      padding: 12px;
+    }
+
+    input { background: white; min-width: 0; }
+
+    button {
+      background: #e8eee0;
+      color: #18332a;
+      font-weight: 650;
+    }
+
+    button:focus-visible, input:focus-visible {
+      outline: 3px solid #8cad3b;
+      outline-offset: 2px;
+    }
+
+    .primary { background: var(--green); border: 0; }
+    .danger { background: #ffc7bd; border: 0; }
+    .muted { color: #748174; font-size: 13px; line-height: 1.7; }
+    .eyebrow { font-size: 10px; letter-spacing: 2px; }
+
+    #login {
+      min-height: 100dvh;
+      display: grid;
+      grid-template-columns: 1.1fr 1fr;
+      gap: 24px;
+      padding: 24px;
+    }
+
+    .hero {
+      background: radial-gradient(
+        ellipse at bottom right, #365644, transparent 65%
+      ), var(--dark);
+      color: white;
+      padding: 44px;
+      border-radius: 28px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .brand { font-size: 29px; font-weight: 800; letter-spacing: -1px; }
+    .brand span { color: var(--green); }
+
+    h1 {
+      font-size: clamp(40px, 5vw, 72px);
+      line-height: 1.08;
+      letter-spacing: -3px;
+    }
+
+    h1 span { color: var(--green); }
+    .hero p { color: #b9cdbd; line-height: 1.8; }
+    .auth { width: min(390px, 100%); margin: auto; padding: 20px; }
+    .auth h2 { font-size: 28px; letter-spacing: -1px; }
+
+    .auth label { display: block; font-size: 13px; margin: 18px 0; }
+    .auth input { display: block; width: 100%; margin-top: 8px; }
+    .auth button { width: 100%; margin-bottom: 10px; }
+
+    #app {
+      display: grid;
+      grid-template-columns: 290px 1fr;
+      height: 100dvh;
+      max-width: 1450px;
+      margin: auto;
+      padding: 16px;
+      gap: 16px;
+    }
+
+    aside { padding: 15px; display: flex; flex-direction: column; }
+    aside .brand { margin-bottom: 25px; }
+    aside .brand span { color: #72992e; }
+
+    .profile {
+      padding-bottom: 20px;
+      border-bottom: 1px solid #dae2d4;
+    }
+
+    .profile strong { display: block; overflow-wrap: anywhere; }
+    .profile button { padding: 8px; margin-top: 10px; font-size: 11px; }
+    #people { flex: 1; overflow: auto; margin-top: 18px; }
+
+    .person {
+      width: 100%;
+      text-align: left;
+      margin-bottom: 8px;
+      background: transparent;
+      border: 0;
+    }
+
+    .person.active { background: #dfeacb; }
+    #searchForm { display: flex; margin-top: 20px; gap: 5px; }
+    #search { width: 100%; font-size: 12px; }
+
+    .chat {
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      background: white;
+      border: 1px solid #dfe6d9;
+      border-radius: 24px;
+      overflow: hidden;
+    }
+
+    .chat header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 18px;
+      border-bottom: 1px solid #e8ede3;
+    }
+
+    #chatName { flex: 1; overflow-wrap: anywhere; }
+    .chat header button { font-size: 12px; }
+
+    #messages {
+      flex: 1;
+      overflow: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding: 24px;
+    }
+
+    .empty {
+      margin: auto;
+      text-align: center;
+      color: #72806f;
+      line-height: 1.8;
+    }
+
+    .empty strong { font-size: 28px; color: #31462f; }
+
+    .bubble {
+      max-width: 82%;
+      align-self: flex-start;
+      padding: 12px 15px;
+      background: #edf2e7;
+      border-radius: 17px 17px 17px 4px;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      font-size: 14px;
+    }
+
+    .bubble.mine {
+      align-self: flex-end;
+      background: #def1bb;
+      border-radius: 17px 17px 4px 17px;
+    }
+
+    .bubble small {
+      display: block;
+      text-align: right;
+      color: #748174;
+      font-size: 10px;
+      margin-top: 6px;
+    }
+
+    .bubble button { background: transparent; border: 0; }
+
+    #composer {
+      display: flex;
+      gap: 8px;
+      padding: 12px;
+      margin: 8px 14px;
+      background: #f3f6ee;
+      border-radius: 15px;
+    }
+
+    #text { flex: 1; border: 0; background: transparent; }
+    .footnote { text-align: center; font-size: 10px; color: #788571; }
+    #back { display: none; }
+
+    #notice {
+      position: fixed;
+      bottom: 25px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 100;
+      background: #14251f;
+      color: white;
+      border-radius: 12px;
+      padding: 14px 20px;
+      max-width: 90vw;
+      font-size: 13px;
+      box-shadow: 0 5px 30px #0003;
+    }
+
+    dialog {
+      border: 0;
+      border-radius: 24px;
+      padding: 22px;
+      width: min(580px, 94vw);
+      background: #14251f;
+      color: white;
+      text-align: center;
+    }
+
+    dialog::backdrop { background: #10251ccc; }
+    .videos { position: relative; background: #0b1712; border-radius: 15px; }
+    #remote { width: 100%; max-height: 55dvh; min-height: 150px; }
+    #local {
+      position: absolute;
+      width: 25%;
+      bottom: 12px;
+      right: 12px;
+      border-radius: 10px;
+    }
+
+    .controls {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 20px;
+    }
+
+    #snapImage { max-width: 100%; max-height: 65dvh; margin: 15px auto; }
+
+    @media (max-width: 650px) {
+      #login { grid-template-columns: 1fr; padding: 12px; }
+      .hero { padding: 25px; min-height: 300px; }
+      h1 { font-size: 43px; }
+      #app { display: block; padding: 0; }
+      aside { height: 100dvh; padding: 24px; }
+      .chat { display: none; height: 100dvh; border: 0; border-radius: 0; }
+      #app.chat-open aside { display: none; }
+      #app.chat-open .chat { display: flex; }
+      #back { display: inline-block; }
+      .chat header { padding: 12px; }
+      #composer { margin-bottom: max(10px, env(safe-area-inset-bottom)); }
+    }
+  </style>
+</head>
+
+<body>
+  <div id="notice" role="status" aria-live="polite" hidden></div>
+
+  <section id="login">
+    <div class="hero">
+      <div class="brand"><span>●</span> pulse</div>
+      <div>
+        <div class="eyebrow">YOUR PEOPLE. A LITTLE CLOSER.</div>
+        <h1>Small moments.<br><span>Real connections.</span></h1>
+        <p>A quick hello. A photo worth sharing.<br>A familiar voice.</p>
+      </div>
+      <p class="eyebrow">CHATS · PHOTO SNAPS · VOICE & VIDEO</p>
+    </div>
+
+    <div class="auth">
+      <div class="eyebrow">WELCOME TO YOUR CIRCLE</div>
+      <h2>Start with a hello.</h2>
+      <p class="muted">Sign in to connect with your people.</p>
+
+      <form id="authForm">
+        <label>Email
+          <input id="email" type="email" autocomplete="email" required>
+        </label>
+
+        <label>Password
+          <input id="password" type="password"
+                 autocomplete="current-password"
+                 minlength="8" required>
+        </label>
+
+        <button class="primary" type="submit">Sign in →</button>
+        <button id="signup" type="button">Create account</button>
+      </form>
+
+      <p class="muted">
+        Private testing version. Calls work while the app is open.
+      </p>
+      <button id="installLogin" type="button">Install / app help</button>
+    </div>
+  </section>
+
+  <main id="app" hidden>
+    <aside>
+      <div class="brand"><span>●</span> pulse</div>
+
+      <div class="profile">
+        <strong id="myName">Your username</strong>
+        <button id="rename">Change username</button>
+        <button id="logout">Sign out</button>
+      </div>
+
+      <form id="searchForm">
+        <input id="search" placeholder="Exact username"
+               aria-label="Find user by exact username" required>
+        <button type="submit">＋</button>
+      </form>
+
+      <div id="people">
+        <p class="muted">Search for a user to start chatting.</p>
+      </div>
+
+      <p id="syncState" class="muted">Connecting…</p>
+      <button id="installApp">Install / app help</button>
+    </aside>
+
+    <section class="chat">
+      <header>
+        <button id="back" aria-label="Back">‹</button>
+        <strong id="chatName">Choose someone to say hello.</strong>
+        <button id="voice" disabled>☎ Voice</button>
+        <button id="video" disabled>▣ Video</button>
+      </header>
+
+      <div id="messages">
+        <div class="empty">
+          <strong>Your circle starts here.</strong>
+          <p>Find a friend by their username.<br>Share yours with them, too.</p>
+        </div>
+      </div>
+
+      <form id="composer">
+        <button id="photoButton" type="button" disabled
+                aria-label="Take or upload a photo">＋</button>
+        <input id="file" type="file"
+               accept="image/jpeg,image/png,image/webp"
+               capture="environment" hidden>
+        <input id="text" placeholder="Say something…"
+               aria-label="Message" maxlength="2000" disabled>
+        <button id="send" class="primary" disabled>↑</button>
+      </form>
+
+      <p class="footnote">
+        Photo access lasts 24h · Screenshots are possible
+      </p>
+    </section>
+  </main>
+
+  <dialog id="callDialog">
+    <p class="eyebrow">PULSE CALL</p>
+    <h2 id="callName">Calling</h2>
+    <p id="callState">Connecting…</p>
+
+    <div class="videos">
+      <video id="remote" autoplay playsinline></video>
+      <video id="local" autoplay muted playsinline></video>
+    </div>
+
+    <div class="controls">
+      <button id="accept" class="primary" hidden>Accept</button>
+      <button id="mute">Mute</button>
+      <button id="camera">Camera off</button>
+      <button id="end" class="danger">End call</button>
+    </div>
+  </dialog>
+
+  <dialog id="snapDialog">
+    <button id="closeSnap">Close photo ×</button>
+    <br>
+    <img id="snapImage" alt="Photo snap">
+    <p class="muted">Access expires 24 hours after sending.</p>
+  </dialog>
+
+  <script type="module">
+    // PUBLIC configuration only. NEVER put service_role or TURN secrets here.
+    const SUPABASE_URL = "https://YOUR_PROJECT.supabase.co";
+    const SUPABASE_KEY = "YOUR_PUBLIC_KEY";
+
+    // Change to true after deploying the TURN function in step 7.
+    const USE_TURN = false;
+
+    const $ = id => document.getElementById(id);
+
+    let db;
+    let me;
+    let selected;
+    let contacts = new Map();
+    let polling = false;
+    let messageSignature = "";
+    let installedPrompt;
+    let noticeTimer;
+    let snapTimer;
+
+    let call;
+    let pc;
+    let stream;
+    let preparing = false;
+
+    function notify(text) {
+      $("notice").textContent = text;
+      $("notice").hidden = false;
+      clearTimeout(noticeTimer);
+      noticeTimer = setTimeout(() => $("notice").hidden = true, 7000);
+    }
+
+    async function safe(fn) {
+      try {
+        await fn();
+      } catch (error) {
+        notify(error.message || "Something went wrong.");
+      }
+    }
+
+    function unwrap(result) {
+      if (result.error) throw result.error;
+      return result.data;
+    }
+
+    async function rpc(name, args) {
+      return unwrap(await db.rpc(name, args));
+    }
+
+    function element(tag, text, className) {
+      const node = document.createElement(tag);
+      if (text !== undefined) node.textContent = text;
+      if (className) node.className = className;
+      return node;
+    }
+
+    function username(id) {
+      return contacts.get(id)?.username || "User";
+    }
+
+    async function loadProfiles(ids) {
+      const unique = [...new Set(ids)].filter(Boolean);
+      if (!unique.length) return;
+
+      const rows = unwrap(
+        await db.from("profiles")
+          .select("id,username")
+          .in("id", unique)
+      );
+
+      rows.forEach(row => contacts.set(row.id, row));
+    }
+
+    function renderContacts() {
+      $("people").replaceChildren();
+
+      for (const [id, profile] of contacts) {
+        if (id === me.id) continue;
+
+        const button = element(
+          "button",
+          profile.username,
+          "person" + (selected === id ? " active" : "")
+        );
+
+        button.onclick = () => safe(() => selectContact(id));
+        $("people").append(button);
+      }
+
+      if (!$("people").children.length) {
+        $("people").append(
+          element("p", "Find a friend using their exact username.", "muted")
+        );
+      }
+    }
+
+    async function selectContact(id) {
+      selected = id;
+      messageSignature = "";
+
+      $("chatName").textContent = username(id);
+      $("app").classList.add("chat-open");
+
+      for (const name of ["voice", "video", "photoButton", "text", "send"]) {
+        $(name).disabled = false;
+      }
+
+      renderContacts();
+      await loadMessages();
+    }
+
+    async function loadMessages() {
+      if (!selected) return;
+      const peer = selected;
+
+      const rows = unwrap(
+        await db.from("messages")
+          .select("*")
+          .or(
+            `and(sender.eq.${me.id},recipient.eq.${peer}),` +
+            `and(sender.eq.${peer},recipient.eq.${me.id})`
+          )
+          .order("created_at", { ascending: false })
+          .limit(100)
+      ).reverse();
+
+      if (selected !== peer) return;
+
+      const signature = peer + rows.map(row => row.id).join(",");
+      if (signature === messageSignature) return;
+
+      messageSignature = signature;
+      const list = $("messages");
+      const atBottom =
+        list.scrollHeight - list.scrollTop - list.clientHeight < 100;
+
+      list.replaceChildren();
+
+      if (!rows.length) {
+        list.append(element("p", "Start with a hello ✦", "empty"));
+      }
+
+      for (const row of rows) {
+        const bubble = element(
+          "div",
+          undefined,
+          "bubble" + (row.sender === me.id ? " mine" : "")
+        );
+
+        if (row.photo_path) {
+          const open = element("button", "◉ Open photo snap");
+          open.onclick = () => safe(() => openSnap(row));
+          bubble.append(open);
+        } else {
+          bubble.append(element("div", row.body));
+        }
+
+        bubble.append(
+          element(
+            "small",
+            new Date(row.created_at).toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit"
+            })
+          )
+        );
+
+        list.append(bubble);
+      }
+
+      if (atBottom || rows.length < 5) {
+        list.scrollTop = list.scrollHeight;
+      }
+    }
+
+    async function openSnap(row) {
+      const remaining = new Date(row.expires_at).getTime() - Date.now();
+      if (remaining <= 0) throw Error("This snap has expired.");
+
+      const seconds = Math.max(
+        1,
+        Math.min(20, Math.floor(remaining / 1000))
+      );
+
+      const data = unwrap(
+        await db.storage.from("snaps")
+          .createSignedUrl(row.photo_path, seconds)
+      );
+
+      $("snapImage").src = data.signedUrl;
+      $("snapDialog").showModal();
+
+      clearTimeout(snapTimer);
+      snapTimer = setTimeout(
+        () => $("snapDialog").close(),
+        Math.min(20000, remaining)
+      );
+    }
+
+    async function compressPhoto(file) {
+      if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+        throw Error("Choose a JPG, PNG or WebP image.");
+      }
+
+      if (file.size > 20 * 1024 * 1024) {
+        throw Error("Choose an image smaller than 20 MB.");
+      }
+
+      const bitmap = await createImageBitmap(file);
+      const scale = Math.min(
+        1,
+        1400 / Math.max(bitmap.width, bitmap.height)
+      );
+
+      const canvas = document.createElement("canvas");
+      canvas.width = Math.round(bitmap.width * scale);
+      canvas.height = Math.round(bitmap.height * scale);
+
+      const context = canvas.getContext("2d");
+      context.fillStyle = "#fff";
+      context.fillRect(0, 0, canvas.width, canvas.height);
+      context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+      bitmap.close();
+
+      const blob = await new Promise(resolve =>
+        canvas.toBlob(resolve, "image/jpeg", 0.75)
+      );
+
+      if (!blob || blob.size > 2097152) {
+        throw Error("This image is too large. Try a smaller photo.");
+      }
+
+      return blob;
+    }
+
+    async function sync() {
+      if (!me || polling) return;
+      polling = true;
+
+      try {
+        const recent = unwrap(
+          await db.from("messages")
+            .select("sender,recipient")
+            .order("created_at", { ascending: false })
+            .limit(100)
+        );
+
+        await loadProfiles([
+          me.id,
+          ...recent.flatMap(row => [row.sender, row.recipient])
+        ]);
+
+        $("myName").textContent = username(me.id);
+        renderContacts();
+
+        await loadMessages();
+        await pollCalls();
+
+        $("syncState").textContent = "Connected · updates every 3 seconds";
+      } catch (error) {
+        $("syncState").textContent = "Connection issue · retrying";
+        console.warn(error.message);
+      } finally {
+        polling = false;
+      }
+    }
+
+    async function boot() {
+      const session = unwrap(await db.auth.getSession()).session;
+      if (!session) return;
+
+      me = session.user;
+      $("login").hidden = true;
+      $("app").hidden = false;
+
+      await sync();
+    }
+
+    async function getIceServers() {
+      if (USE_TURN) {
+        const result = unwrap(
+          await db.functions.invoke("turn", { body: {} })
+        );
+
+        if (!Array.isArray(result.iceServers)) {
+          throw Error("The TURN server returned invalid credentials.");
+        }
+
+        return result.iceServers;
+      }
+
+      notify("Direct-call testing mode. Configure TURN for calls across networks.");
+      return [{ urls: "stun:stun.cloudflare.com:3478" }];
+    }
+
+    function releaseMedia() {
+      if (pc) {
+        pc.onconnectionstatechange = null;
+        pc.close();
+        pc = null;
+      }
+
+      stream?.getTracks().forEach(track => track.stop());
+      stream = null;
+
+      $("local").srcObject = null;
+      $("remote").srcObject = null;
+    }
+
+    async function createPeer(video) {
+      if (!navigator.mediaDevices?.getUserMedia) {
+        throw Error("Open the HTTPS website in a supported browser.");
+      }
+
+      const iceServers = await getIceServers();
+
+      stream = await navigator.mediaDevices.getUserMedia({
+        audio: true,
+        video: video ? {
+          facingMode: "user",
+          width: { ideal: 640 },
+          height: { ideal: 480 }
+        } : false
+      });
+
+      pc = new RTCPeerConnection({ iceServers });
+
+      $("local").srcObject = stream;
+      stream.getTracks().forEach(track => pc.addTrack(track, stream));
+
+      pc.ontrack = event => {
+        $("remote").srcObject =
+          event.streams[0] || new MediaStream([event.track]);
+
+        $("remote").play().catch(() => {
+          notify("Tap the remote video area to enable call audio.");
+        });
+      };
+
+      pc.onconnectionstatechange = () => {
+        if (!pc) return;
+
+        $("callState").textContent =
+          pc.connectionState === "connected"
+            ? "Connected"
+            : pc.connectionState;
+
+        if (pc.connectionState === "failed") {
+          notify("Call connection failed. Check TURN settings and try again.");
+          safe(endCall);
+        }
+      };
+
+      $("mute").textContent = "Mute";
+      $("camera").textContent = "Camera off";
+      $("camera").hidden = !video;
+    }
+
+    // Gather candidates before sending the SDP.
+    async function completeDescription() {
+      const connection = pc;
+
+      if (connection.iceGatheringState !== "complete") {
+        await new Promise((resolve, reject) => {
+          const timer = setTimeout(() => {
+            connection.removeEventListener("icegatheringstatechange", check);
+            reject(Error("Network discovery timed out. Check TURN settings."));
+          }, 20000);
+
+          function check() {
+            if (connection.iceGatheringState === "complete") {
+              clearTimeout(timer);
+              connection.removeEventListener("icegatheringstatechange", check);
+              resolve();
+            }
+          }
+
+          connection.addEventListener("icegatheringstatechange", check);
+          check();
+        });
+      }
+
+      return connection.localDescription.toJSON();
+    }
+
+    function showCall(other, video, incoming) {
+      $("callName").textContent = username(other);
+      $("callState").textContent = incoming
+        ? `Incoming ${video ? "video" : "voice"} call`
+        : "Preparing connection…";
+
+      $("accept").hidden = !incoming;
+      $("mute").hidden = incoming;
+      $("camera").hidden = incoming || !video;
+
+      if (!$("callDialog").open) $("callDialog").showModal();
+    }
+
+    async function startCall(video) {
+      if (!selected || call || preparing) return;
+
+      preparing = true;
+      $("end").disabled = true;
+      const other = selected;
+      showCall(other, video, false);
+
+      try {
+        await createPeer(video);
+        await pc.setLocalDescription(await pc.createOffer());
+        const offer = await completeDescription();
+
+        const id = await rpc("start_call", {
+          p_to: other,
+          p_video: video,
+          p_offer: offer
+        });
+
+        call = {
+          id,
+          caller: me.id,
+          callee: other,
+          video,
+          status: "ringing",
+          created_at: new Date().toISOString()
+        };
+
+        $("callState").textContent = "Calling… your friend must have Pulse open.";
+      } catch (error) {
+        releaseMedia();
+        $("callDialog").close();
+        throw error;
+      } finally {
+        preparing = false;
+        $("end").disabled = false;
+      }
+    }
+
+    async function acceptCall() {
+      if (!call || preparing) return;
+
+      preparing = true;
+      $("accept").disabled = true;
+      $("end").disabled = true;
+
+      try {
+        await createPeer(call.video);
+        await pc.setRemoteDescription(call.offer);
+        await pc.setLocalDescription(await pc.createAnswer());
+
+        const answer = await completeDescription();
+
+        await rpc("answer_call", {
+          p_id: call.id,
+          p_answer: answer
+        });
+
+        call.status = "active";
+        $("accept").hidden = true;
+        $("mute").hidden = false;
+        $("callState").textContent = "Connecting…";
+      } catch (error) {
+        await endCall();
+        throw error;
+      } finally {
+        preparing = false;
+        $("accept").disabled = false;
+        $("end").disabled = false;
+      }
+    }
+
+    async function pollCalls() {
+      if (preparing) return;
+
+      if (call) {
+        const latest = unwrap(
+          await db.from("calls")
+            .select("*")
+            .eq("id", call.id)
+            .maybeSingle()
+        );
+
+        const age = latest
+          ? Date.now() - new Date(latest.created_at).getTime()
+          : Infinity;
+
+        const limit = latest?.status === "ringing" ? 90000 : 3600000;
+
+        if (!latest || latest.status === "ended" || age > limit) {
+          await endCall();
+          return;
+        }
+
+        call = latest;
+
+        if (
+          call.caller === me.id &&
+          call.answer &&
+          pc &&
+          !pc.remoteDescription
+        ) {
+          await pc.setRemoteDescription(call.answer);
+        }
+
+        return;
+      }
+
+      const incoming = unwrap(
+        await db.from("calls")
+          .select("*")
+          .eq("callee", me.id)
+          .eq("status", "ringing")
+          .gt("created_at", new Date(Date.now() - 90000).toISOString())
+          .order("created_at", { ascending: false })
+          .limit(1)
+      );
+
+      if (incoming.length) {
+        call = incoming[0];
+        await loadProfiles([call.caller]);
+        renderContacts();
+        showCall(call.caller, call.video, true);
+      }
+    }
+
+    async function endCall() {
+      const id = call?.id;
+      call = null;
+
+      releaseMedia();
+
+      if ($("callDialog").open) $("callDialog").close();
+
+      if (id && db) {
+        const result = await db.rpc("end_call", { p_id: id });
+
+        if (result.error) {
+          notify("Call closed locally. Server status will expire if offline.");
+        }
+      }
+    }
+
+    async function installApp() {
+      if (installedPrompt) {
+        await installedPrompt.prompt();
+        installedPrompt = null;
+      } else {
+        notify(
+          "Android: browser menu → Install app / Add to Home screen. " +
+          "iPhone: Share → Add to Home Screen."
+        );
+      }
+    }
+
+    window.addEventListener("beforeinstallprompt", event => {
+      event.preventDefault();
+      installedPrompt = event;
+    });
+
+    $("installLogin").onclick = () => safe(installApp);
+    $("installApp").onclick = () => safe(installApp);
+
+    $("authForm").onsubmit = event => {
+      event.preventDefault();
+
+      safe(async () => {
+        if (!db) throw Error("Add your Supabase URL and public key first.");
+
+        unwrap(await db.auth.signInWithPassword({
+          email: $("email").value.trim(),
+          password: $("password").value
+        }));
+
+        await boot();
+      });
+    };
+
+    $("signup").onclick = () => safe(async () => {
+      if (!db) throw Error("Add your Supabase URL and public key first.");
+      if (!$("authForm").reportValidity()) return;
+
+      const result = unwrap(await db.auth.signUp({
+        email: $("email").value.trim(),
+        password: $("password").value,
+        options: {
+          emailRedirectTo: new URL("./", location.href).href
+        }
+      }));
+
+      if (result.session) {
+        await boot();
+      } else {
+        notify("Check your email to confirm the account, then sign in.");
+      }
+    });
+
+    $("logout").onclick = () => safe(async () => {
+      await endCall();
+      unwrap(await db.auth.signOut());
+      location.reload();
+    });
+
+    $("rename").onclick = () => safe(async () => {
+      const value = prompt(
+        "Username: 3–24 lowercase letters, numbers or underscores.",
+        username(me.id)
+      );
+
+      if (value === null) return;
+      const name = value.trim().toLowerCase();
+
+      if (!/^[a-z0-9_]{3,24}$/.test(name)) {
+        throw Error("Use 3–24 lowercase letters, numbers or underscores.");
+      }
+
+      unwrap(
+        await db.from("profiles")
+          .update({ username: name })
+          .eq("id", me.id)
+      );
+
+      await sync();
+    });
+
+    $("searchForm").onsubmit = event => {
+      event.preventDefault();
+
+      safe(async () => {
+        const profile = unwrap(
+          await db.from("profiles")
+            .select("id,username")
+            .eq("username", $("search").value.trim().toLowerCase())
+            .maybeSingle()
+        );
+
+        if (!profile) throw Error("Username not found.");
+        if (profile.id === me.id) throw Error("Search for another user.");
+
+        contacts.set(profile.id, profile);
+        $("search").value = "";
+        await selectContact(profile.id);
+      });
+    };
+
+    $("composer").onsubmit = event => {
+      event.preventDefault();
+
+      safe(async () => {
+        const body = $("text").value.trim();
+        const recipient = selected;
+        if (!body || !recipient) return;
+
+        $("send").disabled = true;
+
+        try {
+          await rpc("send_message", {
+            p_to: recipient,
+            p_body: body
+          });
+
+          $("text").value = "";
+          await loadMessages();
+        } finally {
+          $("send").disabled = !selected;
+        }
+      });
+    };
+
+    $("photoButton").onclick = () => $("file").click();
+
+    $("file").onchange = () => safe(async () => {
+      const file = $("file").files[0];
+      const recipient = selected;
+      $("file").value = "";
+
+      if (!file || !recipient) return;
+      $("photoButton").disabled = true;
+
+      try {
+        const photo = await compressPhoto(file);
+        const path = `${me.id}/${crypto.randomUUID()}.jpg`;
+
+        unwrap(
+          await db.storage.from("snaps").upload(path, photo, {
+            contentType: "image/jpeg",
+            cacheControl: "0",
+            upsert: false
+          })
+        );
+
+        await rpc("send_message", {
+          p_to: recipient,
+          p_path: path
+        });
+
+        await loadMessages();
+        notify("Photo sent. Access expires in 24 hours.");
+      } finally {
+        $("photoButton").disabled = !selected;
+      }
+    });
+
+    $("back").onclick = () => $("app").classList.remove("chat-open");
+    $("voice").onclick = () => safe(() => startCall(false));
+    $("video").onclick = () => safe(() => startCall(true));
+    $("accept").onclick = () => safe(acceptCall);
+    $("end").onclick = () => safe(endCall);
+
+    $("mute").onclick = () => {
+      const tracks = stream?.getAudioTracks() || [];
+      tracks.forEach(track => track.enabled = !track.enabled);
+      $("mute").textContent = tracks[0]?.enabled ? "Mute" : "Unmute";
+    };
+
+    $("camera").onclick = () => {
+      const tracks = stream?.getVideoTracks() || [];
+      tracks.forEach(track => track.enabled = !track.enabled);
+      $("camera").textContent = tracks[0]?.enabled
+        ? "Camera off" : "Camera on";
+    };
+
+    $("remote").onclick = () => $("remote").play().catch(() => {});
+
+    $("callDialog").addEventListener("cancel", event => {
+      event.preventDefault();
+      if (!preparing) safe(endCall);
+    });
+
+    $("closeSnap").onclick = () => $("snapDialog").close();
+
+    $("snapDialog").addEventListener("close", () => {
+      clearTimeout(snapTimer);
+      $("snapImage").removeAttribute("src");
+    });
+
+    document.addEventListener("visibilitychange", () => {
+      if (!document.hidden) sync();
+    });
+
+    window.addEventListener("pagehide", () => {
+      releaseMedia();
+
+      // Best effort: browsers may stop network requests during closing.
+      if (call && db) db.rpc("end_call", { p_id: call.id });
+    });
+
+    if ("serviceWorker" in navigator && location.protocol === "https:") {
+      navigator.serviceWorker.register("./sw.js").catch(console.warn);
+    }
+
+    if (SUPABASE_URL.includes("YOUR_") || SUPABASE_KEY === "YOUR_PUBLIC_KEY") {
+      notify("Setup needed: add your Supabase URL and public key in index.html.");
+    } else {
+      safe(async () => {
+        const { createClient } = await import(
+          "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/+esm"
+        );
+
+        db = createClient(SUPABASE_URL, SUPABASE_KEY);
+        await boot();
+
+        setInterval(() => sync(), 3000);
+
+        db.auth.onAuthStateChange(event => {
+          if (event === "SIGNED_OUT" && me) location.reload();
+        });
+      });
+    }
+  </script>
+</body>
+</html>
