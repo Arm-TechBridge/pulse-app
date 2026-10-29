@@ -1,1 +1,19 @@
-
+{
+  "id": "./",
+  "name": "Pulse — Chats, Snaps & Calls",
+  "short_name": "Pulse",
+  "description": "Your people, a little closer.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f2f5ee",
+  "theme_color": "#14251f",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
